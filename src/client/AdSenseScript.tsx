@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 export interface AdSenseScriptProps {
-  client: string; // e.g. "ca-pub-1234567890123456"
-  crossOrigin?: "anonymous" | "use-credentials";
-  strategy?: "afterInteractive" | "lazyOnload" | "beforeInteractive";
-  nonce?: string;
+	client: string; // e.g. "ca-pub-1234567890123456"
+	crossOrigin?: "anonymous" | "use-credentials";
+	strategy?: "afterInteractive" | "lazyOnload" | "beforeInteractive";
+	nonce?: string;
 }
 
 /**
@@ -15,29 +15,29 @@ export interface AdSenseScriptProps {
  * Handles global deduplication and non-blocking script injection.
  */
 export function AdSenseScript({
-  client,
-  crossOrigin = "anonymous",
-  nonce,
+	client,
+	crossOrigin = "anonymous",
+	nonce,
 }: AdSenseScriptProps) {
-  useEffect(() => {
-    if (!client) return;
+	useEffect(() => {
+		if (!client) return;
 
-    const scriptId = `adinject-adsense-script-${client}`;
-    if (document.getElementById(scriptId)) {
-      return; // Deduplicate
-    }
+		const scriptId = `adinject-adsense-script-${client}`;
+		if (document.getElementById(scriptId)) {
+			return; // Deduplicate
+		}
 
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(
-      client,
-    )}`;
-    script.async = true;
-    script.crossOrigin = crossOrigin;
-    if (nonce) script.nonce = nonce;
+		const script = document.createElement("script");
+		script.id = scriptId;
+		script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(
+			client,
+		)}`;
+		script.async = true;
+		script.crossOrigin = crossOrigin;
+		if (nonce) script.nonce = nonce;
 
-    document.head.appendChild(script);
-  }, [client, crossOrigin, nonce]);
+		document.head.appendChild(script);
+	}, [client, crossOrigin, nonce]);
 
-  return null;
+	return null;
 }

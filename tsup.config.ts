@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: "src/index.ts",
     "client/index": "src/client/index.ts",
+    "adapters/index": "src/adapters/index.tsx",
     "transformers/index": "src/transformers/index.ts",
     "types/index": "src/types/index.ts",
   },
