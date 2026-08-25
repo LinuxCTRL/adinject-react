@@ -1,0 +1,75 @@
+{
+  "name": "adinject-react",
+  "version": "1.0.2",
+  "description": "Headless Ad Engine & In-Article / In-Feed Inserter for Next.js App Router & React 19",
+  "author": "AdInject Team",
+  "license": "MIT",
+  "keywords": [
+    "adinject",
+    "adsense",
+    "nextjs",
+    "react",
+    "react-19",
+    "app-router",
+    "headless-ads",
+    "in-article-ads",
+    "in-feed-ads",
+    "zero-cls",
+    "sanity",
+    "portable-text",
+    "markdown-ads"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.mjs",
+      "require": "./dist/client/index.js"
+    },
+    "./transformers": {
+      "types": "./dist/transformers/index.d.ts",
+      "import": "./dist/transformers/index.mjs",
+      "require": "./dist/transformers/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup && node -e 'const fs = require(\"fs\"); [\"dist/index.js\", \"dist/index.mjs\", \"dist/client/index.js\", \"dist/client/index.mjs\"].forEach(f => { if (fs.existsSync(f)) { const c = fs.readFileSync(f, \"utf8\"); if (!c.startsWith(\"\\\"use client\\\"\")) fs.writeFileSync(f, \"\\\"use client\\\";\\n\" + c); } });'",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "next": ">=14.0.0 || >=15.0.0 || >=16.0.0",
+    "react": ">=18.0.0 || >=19.0.0",
+    "react-dom": ">=18.0.0 || >=19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.3"
+  }
+}
