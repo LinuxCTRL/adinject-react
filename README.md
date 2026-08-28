@@ -1,5 +1,6 @@
 # adinject-react
 
+[![GitHub](https://img.shields.io/badge/GitHub-LinuxCTRL%2Fadinject--react-181717?style=flat-square&logo=github)](https://github.com/LinuxCTRL/adinject-react)
 [![TypeScript](https://img.shields.io/badge/typescript-strict-blue?style=flat-square)](https://www.typescriptlang.org/)
 [![0 Dependencies](https://img.shields.io/badge/dependencies-0-success?style=flat-square)](https://www.npmjs.com/package/adinject-react)
 [![Next.js](https://img.shields.io/badge/Next.js-14--16-black?style=flat-square&logo=next.js)](https://nextjs.org/)

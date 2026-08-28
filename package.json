@@ -1,6 +1,6 @@
 {
   "name": "adinject-react",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Headless Ad Engine & In-Article / In-Feed Inserter for Next.js App Router & React 19",
   "author": "LinuxCTRL",
   "license": "MIT",
