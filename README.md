@@ -4,7 +4,6 @@
 [![0 Dependencies](https://img.shields.io/badge/dependencies-0-success?style=flat-square)](https://www.npmjs.com/package/adinject-react)
 [![Next.js](https://img.shields.io/badge/Next.js-14--16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)](https://react.dev/)
-[![Tests Passing](https://img.shields.io/badge/tests-48%2F48%20pass-emerald?style=flat-square)](https://github.com/soufian-web/adinject)
 [![CLS Safe](https://img.shields.io/badge/CLS-Safe%20by%20Design-purple?style=flat-square)](https://web.dev/cls/)
 [![Consent v2 + GPP](https://img.shields.io/badge/Consent%20Mode-v2%20%2B%20GPP-orange?style=flat-square)](https://support.google.com/google-ads/answer/10000067)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
@@ -72,6 +71,44 @@ import { InArticleAds, AdInjectFeed } from "adinject-react";
   renderItem={(recipe) => <RecipeCard recipe={recipe} />}
 />
 ```
+
+---
+
+## 🛠️ Companion Visual DevTools: `adinject-devtools`
+
+For local development, inspect your live ad slots, audit policy compliance, simulate realistic creatives, and visually point-and-click to place ads on your page using **[`adinject-devtools`](https://www.npmjs.com/package/adinject-devtools)**:
+
+```bash
+npm install --save-dev adinject-devtools
+# or
+bun add -d adinject-devtools
+```
+
+```tsx
+import { AdInjectProvider } from "adinject-react";
+import { AdInjectDevTools } from "adinject-devtools";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <AdInjectProvider client="ca-pub-1234567890123456">
+          {children}
+          {/* Automatically tree-shaken in production builds */}
+          <AdInjectDevTools />
+        </AdInjectProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### ✨ Features of `adinject-devtools`:
+- 🎯 **Point & Click Visual Inserter**: Click anywhere on your live webpage to place mock ads and generate copy-paste ready JSX.
+- ✨ **Auto-Pick Best Places**: 1-click AI engine that selects optimal high-CTR, zero-CLS locations.
+- 🤖 **AI Prompt Generator**: Generates clean Markdown prompts for **Cursor, Claude Code, Antigravity & Copilot**.
+- 🛡️ **Zero-CLS Policy Auditor**: Audits Better Ads & Google Publisher compliance in real time.
+- 🎨 **Creative Mockup Studio**: 6 industry themes (Tech, SaaS, Food, E-Commerce, Travel, Finance) with 1-click drop onto page.
 
 ---
 
