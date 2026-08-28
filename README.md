@@ -1,5 +1,8 @@
 # adinject-react
 
+[![npm version](https://img.shields.io/npm/v/adinject-react?style=flat-square&color=CB3837&logo=npm)](https://www.npmjs.com/package/adinject-react)
+[![npm downloads](https://img.shields.io/npm/dm/adinject-react?style=flat-square&color=blue&logo=npm)](https://www.npmjs.com/package/adinject-react)
+[![npm total downloads](https://img.shields.io/npm/dt/adinject-react?style=flat-square&color=green&logo=npm)](https://www.npmjs.com/package/adinject-react)
 [![GitHub](https://img.shields.io/badge/GitHub-LinuxCTRL%2Fadinject--react-181717?style=flat-square&logo=github)](https://github.com/LinuxCTRL/adinject-react)
 [![TypeScript](https://img.shields.io/badge/typescript-strict-blue?style=flat-square)](https://www.typescriptlang.org/)
 [![0 Dependencies](https://img.shields.io/badge/dependencies-0-success?style=flat-square)](https://www.npmjs.com/package/adinject-react)
