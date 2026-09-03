@@ -298,6 +298,40 @@ function CustomAdBanner() {
 
 ---
 
+### 6. Sanity CMS & Portable Text AST Injection
+
+Operates directly on Sanity's Abstract Syntax Tree (AST) before React renders, eliminating regex parsing, DOM scraping, and hydration layout shifts:
+
+```tsx
+import { injectPortableTextAds, injectPortableTextAffiliate } from "adinject-react";
+
+// Injects ad slots and affiliate recommendation cards directly into the Portable Text AST
+const { content: transformedBlocks } = injectPortableTextAds({
+  blocks: post.body,
+  rule: {
+    id: "article_rule",
+    name: "Article Body Ads",
+    enabled: true,
+    paragraphInterval: 3,       // Injects after every 3 paragraphs
+    minWordsBeforeFirstAd: 80,  // Minimum 80 words before first ad
+    maxAdsPerArticle: 3,        // Maximum 3 ads
+    adUnitId: "article_slot",
+  },
+  adUnit: {
+    id: "article_slot",
+    client: "ca-pub-1234567890",
+    slot: "9876543210",
+    format: "fluid",
+    testMode: true,
+  },
+});
+```
+
+> **Official Sanity Reference Template & Starter**:  
+> Check out the complete, production-ready example showcase at [https://github.com/LinuxCTRL/sanity-adinject](https://github.com/LinuxCTRL/sanity-adinject).
+
+---
+
 ## 💻 Next.js & React Compatibility
 
 | Environment | Support | Notes |
