@@ -5,10 +5,18 @@ import type {
 	PlacementRule,
 } from "../types";
 
+export interface PortableTextSpan {
+	_type: string;
+	text: string;
+	_key?: string;
+	marks?: string[];
+	[key: string]: unknown;
+}
+
 export interface PortableTextBlock {
 	_type: string;
 	_key: string;
-	children?: Array<{ _type: string; text: string }>;
+	children?: Array<PortableTextSpan>;
 	style?: string;
 	[key: string]: unknown;
 }
