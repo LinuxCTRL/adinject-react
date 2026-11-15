@@ -65,7 +65,7 @@
     "url": "https://github.com/LinuxCTRL/adinject-react/issues"
   },
   "scripts": {
-    "build": "tsup && node -e 'const fs = require(\"fs\"); [\"dist/index.js\", \"dist/index.mjs\", \"dist/client/index.js\", \"dist/client/index.mjs\"].forEach(f => { if (fs.existsSync(f)) { const c = fs.readFileSync(f, \"utf8\"); if (!c.startsWith(\"\\\"use client\\\"\")) fs.writeFileSync(f, \"\\\"use client\\\";\\n\" + c); } });'",
+    "build": "tsup && node -e 'const fs = require(\"fs\"); [\"dist/client/index.js\", \"dist/client/index.mjs\"].forEach(f => { if (fs.existsSync(f)) { const c = fs.readFileSync(f, \"utf8\"); if (!c.startsWith(\"\\\"use client\\\"\")) fs.writeFileSync(f, \"\\\"use client\\\";\\n\" + c); } });'",
     "dev": "tsup --watch",
     "test": "bun test",
     "typecheck": "tsc --noEmit",

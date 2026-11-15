@@ -40,24 +40,26 @@ const ConsentContext = createContext<ConsentContextValue>({
 });
 
 /**
- * Updates Google Consent Mode v2 via gtag('consent', 'update', ...)
+ * Updates Google Consent Mode v2 via gtag('consent', 'default' | 'update', ...)
  */
-function syncGoogleConsentMode(status: ConsentStatus) {
+function syncGoogleConsentMode(status: ConsentStatus, isDefault = false) {
 	if (typeof window === "undefined") return;
 
 	const consentValue = status === "granted" ? "granted" : "denied";
+	const command = isDefault ? "default" : "update";
 
+	window.dataLayer = window.dataLayer || [];
 	if (typeof window.gtag === "function") {
-		window.gtag("consent", "update", {
+		window.gtag("consent", command, {
 			ad_storage: consentValue,
 			ad_user_data: consentValue,
 			ad_personalization: consentValue,
 			analytics_storage: consentValue,
 		});
-	} else if (Array.isArray(window.dataLayer)) {
+	} else {
 		window.dataLayer.push([
 			"consent",
-			"update",
+			command,
 			{
 				ad_storage: consentValue,
 				ad_user_data: consentValue,
@@ -75,10 +77,24 @@ export function ConsentProvider({
 	mode = "google-consent-v2",
 	getConsent,
 	listenEvent,
-	initialStatus = "unknown",
+	initialStatus,
 	children,
 }: ConsentProviderProps) {
-	const [status, setStatus] = useState<ConsentStatus>(initialStatus);
+	// If a custom CMP check (getConsent) or event listener is supplied without an explicit initialStatus,
+	// wait in "unknown" until resolved; otherwise default to "granted" so quickstart renders ads.
+	const resolvedInitialStatus: ConsentStatus =
+		initialStatus ??
+		(getConsent || listenEvent || mode === "tcf" || mode === "gpp"
+			? "unknown"
+			: "granted");
+	const [status, setStatus] = useState<ConsentStatus>(resolvedInitialStatus);
+
+	// On mount, establish initial consent signals for Google Consent Mode v2
+	useEffect(() => {
+		if (mode === "google-consent-v2") {
+			syncGoogleConsentMode(resolvedInitialStatus, true);
+		}
+	}, [mode, resolvedInitialStatus]);
 
 	const grant = useCallback(() => {
 		setStatus("granted");

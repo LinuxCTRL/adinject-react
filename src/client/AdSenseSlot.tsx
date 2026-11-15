@@ -156,9 +156,26 @@ export function AdSenseSlot({
 		return () => clearTimeout(pushTimer);
 	}, [isVisible, effectiveTestMode, updateStatus, isConsentGranted]);
 
-	// 3. Fallback unfill detection check
+	// 3. Fallback unfill detection check (MutationObserver + safety timeout)
 	useEffect(() => {
-		if (effectiveTestMode || !isPushedRef.current) return;
+		if (effectiveTestMode || status !== "rendered") return;
+
+		const insEl = containerRef.current?.querySelector(".adsbygoogle");
+		let observer: MutationObserver | null = null;
+
+		if (insEl && typeof MutationObserver !== "undefined") {
+			observer = new MutationObserver(() => {
+				const adStatus = insEl.getAttribute("data-ad-status");
+				if (adStatus === "unfilled") {
+					updateStatus("unfilled");
+					observer?.disconnect();
+				}
+			});
+			observer.observe(insEl, {
+				attributes: true,
+				attributeFilter: ["data-ad-status"],
+			});
+		}
 
 		const checkTimer = setTimeout(() => {
 			const el = containerRef.current?.querySelector(".adsbygoogle");
@@ -170,15 +187,18 @@ export function AdSenseSlot({
 			}
 		}, 2500);
 
-		return () => clearTimeout(checkTimer);
-	}, [effectiveTestMode, updateStatus]);
+		return () => {
+			if (observer) observer.disconnect();
+			clearTimeout(checkTimer);
+		};
+	}, [status, effectiveTestMode, updateStatus]);
 
 	// 4. Dev-Mode CLS Regression Guard
 	useEffect(() => {
 		if (
 			process.env.NODE_ENV === "production" ||
 			effectiveTestMode ||
-			!isPushedRef.current
+			status !== "rendered"
 		)
 			return;
 
@@ -199,7 +219,7 @@ export function AdSenseSlot({
 		}, 3500);
 
 		return () => clearTimeout(clsCheckTimer);
-	}, [effectiveTestMode, slot, effectiveDimensions.minHeight]);
+	}, [status, effectiveTestMode, slot, effectiveDimensions.minHeight]);
 
 	const containerStyle: React.CSSProperties = {
 		width: "100%",

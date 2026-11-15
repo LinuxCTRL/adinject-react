@@ -9,8 +9,91 @@ export interface InjectFeedAdsOptions<T> {
 	idempotencyKey?: string;
 }
 
-// Module-level idempotency cache for string keys
-const keyCache = new Map<string, FeedItem<unknown>[]>();
+interface CacheEntry<T> {
+	itemsRef: T[];
+	itemsLength: number;
+	ruleEnabled: boolean;
+	ruleId?: string;
+	interval?: number;
+	startOffset?: number;
+	maxAds?: number;
+	adUnitId?: string;
+	result: FeedItem<T>[];
+}
+
+const MAX_CACHE_ENTRIES = 200;
+const keyCache = new Map<string, CacheEntry<unknown>>();
+
+/**
+ * Resets the module-level feed cache (mainly for testing)
+ */
+export function clearFeedCache(): void {
+	keyCache.clear();
+}
+
+function getCachedResult<T>(
+	key: string,
+	items: T[],
+	rule?: PlacementRule,
+	adUnit?: AdUnit,
+): FeedItem<T>[] | null {
+	const entry = keyCache.get(key) as CacheEntry<T> | undefined;
+	if (!entry) return null;
+
+	// Invalidate if items reference changed and contents/length changed
+	if (entry.itemsRef !== items && entry.itemsLength !== items.length) {
+		return null;
+	}
+
+	// Invalidate if rule enabled state changed
+	const ruleEnabled = rule ? rule.enabled : true;
+	if (entry.ruleEnabled !== ruleEnabled) {
+		return null;
+	}
+
+	// Invalidate if spacing parameters changed
+	if (
+		entry.interval !== (rule?.itemInterval ?? 4) ||
+		entry.startOffset !== (rule?.startOffset ?? 2) ||
+		entry.maxAds !== (rule?.maxAdsPerFeed ?? 4) ||
+		entry.adUnitId !== (adUnit?.id ?? rule?.adUnitId)
+	) {
+		return null;
+	}
+
+	// Refresh position in Map for LRU
+	keyCache.delete(key);
+	keyCache.set(key, entry as CacheEntry<unknown>);
+
+	return entry.result;
+}
+
+function setCachedResult<T>(
+	key: string,
+	items: T[],
+	rule: PlacementRule | undefined,
+	adUnit: AdUnit | undefined,
+	result: FeedItem<T>[],
+) {
+	if (keyCache.size >= MAX_CACHE_ENTRIES) {
+		const oldestKey = keyCache.keys().next().value;
+		if (oldestKey !== undefined) {
+			keyCache.delete(oldestKey);
+		}
+	}
+
+	keyCache.set(key, {
+		itemsRef: items,
+		itemsLength: items.length,
+		ruleEnabled: rule ? rule.enabled : true,
+		ruleId: rule?.id,
+		interval: rule?.itemInterval ?? 4,
+		startOffset: rule?.startOffset ?? 2,
+		maxAds: rule?.maxAdsPerFeed ?? 4,
+		adUnitId: adUnit?.id ?? rule?.adUnitId,
+		result,
+	});
+}
 
 /**
  * Injects Google AdSense / affiliate ad placeholders between items in an array
@@ -34,8 +117,9 @@ export function injectFeedAds<T>({
 }: InjectFeedAdsOptions<T>): FeedItem<T>[] {
 	if (!items || items.length === 0) return [];
 
-	if (idempotencyKey && keyCache.has(idempotencyKey)) {
-		return keyCache.get(idempotencyKey) as FeedItem<T>[];
+	if (idempotencyKey) {
+		const cached = getCachedResult<T>(idempotencyKey, items, rule, adUnit);
+		if (cached) return cached;
 	}
 
 	// Default ad unit if not provided
@@ -78,8 +162,9 @@ export function injectFeedAds<T>({
 			type: "item",
 			data,
 		}));
-		if (idempotencyKey)
-			keyCache.set(idempotencyKey, rawItems as FeedItem<unknown>[]);
+		if (idempotencyKey) {
+			setCachedResult(idempotencyKey, items, rule, adUnit, rawItems);
+		}
 		return rawItems;
 	}
 
@@ -122,7 +207,7 @@ export function injectFeedAds<T>({
 	}
 
 	if (idempotencyKey) {
-		keyCache.set(idempotencyKey, result as FeedItem<unknown>[]);
+		setCachedResult(idempotencyKey, items, rule, adUnit, result);
 	}
 
 	return result;

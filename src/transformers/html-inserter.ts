@@ -1,3 +1,4 @@
+import { isParagraphAdPosition } from "../rules/rule-evaluator";
 import type {
 	AdInjectionResult,
 	AdUnit,
@@ -63,6 +64,16 @@ export function injectHtmlAds({
 		};
 	}
 
+	const totalParagraphsInDocument = (html.match(/<\/p>/gi) || []).length;
+	if (totalParagraphsInDocument < Math.max(0, rule.minParagraphsTotal ?? 0)) {
+		return {
+			content: html,
+			insertedAds: [],
+			totalWords: countWordsInHtml(html),
+			totalParagraphs: totalParagraphsInDocument,
+		};
+	}
+
 	const defaultTemplate = (slot: InjectedAdSlot) => `
 <!-- ADINJECT_SLOT_START id="${slot.adUnit.id}" index="${slot.index}" -->
 <div class="adinject-slot-wrapper my-6" data-adinject-index="${slot.index}" data-adinject-unit="${slot.adUnit.id}">
@@ -101,8 +112,12 @@ export function injectHtmlAds({
 
 			const canInject =
 				adsInsertedCount < rule.maxAdsPerArticle &&
-				wordCountAccumulator >= rule.minWordsBeforeFirstAd &&
-				totalParagraphCount % rule.paragraphInterval === 0 &&
+				wordCountAccumulator >= (rule.minWordsBeforeFirstAd ?? 0) &&
+				isParagraphAdPosition(
+					totalParagraphCount,
+					rule.startOffset ?? 1,
+					rule.paragraphInterval,
+				) &&
 				!isExcludedParagraph(precedingParagraph, rule.excludedSelectors);
 
 			if (canInject) {
@@ -148,6 +163,11 @@ export function splitHtmlForAds({
 		return [{ type: "html", content: html }];
 	}
 
+	const totalParagraphsInDocument = (html.match(/<\/p>/gi) || []).length;
+	if (totalParagraphsInDocument < Math.max(0, rule.minParagraphsTotal ?? 0)) {
+		return [{ type: "html", content: html }];
+	}
+
 	const parts = html.split(/(<\/p>)/i);
 	const chunks: HtmlChunk[] = [];
 	let currentHtmlBuffer = "";
@@ -168,8 +188,12 @@ export function splitHtmlForAds({
 
 			const canInject =
 				adsInsertedCount < rule.maxAdsPerArticle &&
-				wordCountAccumulator >= rule.minWordsBeforeFirstAd &&
-				totalParagraphCount % rule.paragraphInterval === 0 &&
+				wordCountAccumulator >= (rule.minWordsBeforeFirstAd ?? 0) &&
+				isParagraphAdPosition(
+					totalParagraphCount,
+					rule.startOffset ?? 1,
+					rule.paragraphInterval,
+				) &&
 				!isExcludedParagraph(precedingParagraph, rule.excludedSelectors);
 
 			if (canInject) {
