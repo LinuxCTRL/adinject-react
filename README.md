@@ -339,6 +339,7 @@ const { content: transformedBlocks } = injectPortableTextAds({
 | **Next.js 16** | ✅ | Fully verified with React 19 compiler |
 | **Next.js 15** | ✅ | App Router & Turbopack compatible |
 | **Next.js 14** | ✅ | App Router & Pages Router |
+| **Server Components (RSC)** | ✅ | Transformers & config client safe for async Server Components |
 | **React 19** | ✅ | Full support for latest React 19 hooks and JSX |
 | **React 18** | ✅ | Backward compatible |
 | **Zero Runtime Dependencies** | ✅ | **0** external `node_modules` dependencies |
@@ -381,7 +382,7 @@ const { content: transformedBlocks } = injectPortableTextAds({
 | `injectPortableTextAds()` | Injects ad blocks into Sanity Portable Text AST structures. |
 | `injectHtmlAffiliateKeywords()` | Autolinks keywords in HTML with density caps. |
 | `injectMarkdownAffiliateKeywords()` | Autolinks keywords in Markdown/MDX with link protection. |
-| `useConsent()` | Accesses active consent status (`granted`, `denied`, `pending`). |
+| `useConsent()` | Accesses active consent status (`granted`, `denied`, `unknown`). |
 | `useAdMetrics()` | Measures IAB ad viewability and viewable duration with IVT bot filtering. |
 | `gamAdapter()` | Built-in adapter for Google Ad Manager (GPT). |
 | `ezoicAdapter()` | Built-in adapter for Ezoic ad placeholders. |

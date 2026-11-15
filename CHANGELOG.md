@@ -14,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unfill Detection**: Added `MutationObserver` on `data-ad-status` attributes to immediately trigger fallbacks when AdSense unfill occurs.
 - **Dev Sanity Warnings**: Emits helpful development warnings when ad units or clients are missing or defaulting to dummy placeholders.
 - **Deterministic Keys**: `injectPortableTextAds` and `injectPortableTextAffiliate` now use deterministic paragraph-based keys, eliminating React hydration mismatches.
-- **CI Workflow**: Restored automated GitHub Actions continuous integration workflow.
 - **Package Metadata**: Added `sideEffects: false`, `engines`, and `./package.json` to exports.
 
 ### Fixed
