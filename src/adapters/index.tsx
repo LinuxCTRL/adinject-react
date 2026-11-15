@@ -1,6 +1,30 @@
-import type React from "react";
+import React, { useEffect } from "react";
 import { AdSenseSlot } from "../client/AdSenseSlot";
 import type { AdDimensions, AdFormat, FallbackBanner } from "../types";
+
+declare global {
+	interface Window {
+		googletag?: {
+			cmd: Array<() => void>;
+			defineSlot?: (
+				adUnitPath: string,
+				size: unknown,
+				divId: string,
+			) => {
+				addService: (service: unknown) => unknown;
+			};
+			pubads?: () => unknown;
+			enableServices?: () => void;
+			display?: (divId: string) => void;
+		};
+		ezstandalone?: {
+			cmd?: Array<() => void>;
+			define?: (...slots: number[]) => void;
+			enable?: () => void;
+			display?: () => void;
+		};
+	}
+}
 
 export interface AdAdapterSlotProps {
 	slot: string;
@@ -97,6 +121,77 @@ export function adsenseAdapter(opts: {
 	});
 }
 
+function GamSlotContainer({
+	divId,
+	adUnitPath,
+	props,
+}: {
+	divId: string;
+	adUnitPath: string;
+	props: AdAdapterSlotProps;
+}) {
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		window.googletag = window.googletag || { cmd: [] };
+		window.googletag.cmd = window.googletag.cmd || [];
+		window.googletag.cmd.push(() => {
+			if (window.googletag?.defineSlot && window.googletag?.pubads) {
+				window.googletag
+					.defineSlot(adUnitPath, "fluid", divId)
+					?.addService(window.googletag.pubads());
+				window.googletag.enableServices?.();
+			}
+			window.googletag?.display?.(divId);
+		});
+	}, [divId, adUnitPath]);
+
+	return (
+		<aside
+			id={divId}
+			aria-label={props.a11yLabel || "Google Ad Manager Advertisement"}
+			className={`adinject-gam-slot ${props.className || ""}`}
+			data-adinject-category={props.contentCategory}
+			style={{
+				minHeight: props.dimensions?.minHeight || "250px",
+				width: "100%",
+				...props.style,
+			}}
+		/>
+	);
+}
+
+function EzoicSlotContainer({
+	slot,
+	props,
+}: {
+	slot: string;
+	props: AdAdapterSlotProps;
+}) {
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const placeholderId = Number.parseInt(slot, 10);
+		if (Number.isNaN(placeholderId)) return;
+
+		window.ezstandalone = window.ezstandalone || {};
+		window.ezstandalone.cmd = window.ezstandalone.cmd || [];
+		window.ezstandalone.cmd.push(() => {
+			window.ezstandalone?.define?.(placeholderId);
+			window.ezstandalone?.enable?.();
+			window.ezstandalone?.display?.();
+		});
+	}, [slot]);
+
+	return (
+		<aside
+			id={`ezoic-pub-ad-placeholder-${slot}`}
+			aria-label={props.a11yLabel || "Ezoic Advertisement"}
+			className={`adinject-ezoic-slot ${props.className || ""}`}
+			data-adinject-category={props.contentCategory}
+			style={{ minHeight: "250px", width: "100%", ...props.style }}
+		/>
+	);
+}
+
 /**
  * Built-in Google Ad Manager (GAM / GPT) Adapter
  */
@@ -157,16 +252,10 @@ export function gamAdapter(opts: {
 			}
 
 			return (
-				<aside
-					id={divId}
-					aria-label={props.a11yLabel || "Google Ad Manager Advertisement"}
-					className={`adinject-gam-slot ${props.className || ""}`}
-					data-adinject-category={props.contentCategory}
-					style={{
-						minHeight: props.dimensions?.minHeight || "250px",
-						width: "100%",
-						...props.style,
-					}}
+				<GamSlotContainer
+					divId={divId}
+					adUnitPath={adUnitPath}
+					props={props}
 				/>
 			);
 		},
@@ -212,15 +301,7 @@ export function ezoicAdapter(opts: {
 				);
 			}
 
-			return (
-				<aside
-					id={`ezoic-pub-ad-placeholder-${props.slot}`}
-					aria-label={props.a11yLabel || "Ezoic Advertisement"}
-					className={`adinject-ezoic-slot ${props.className || ""}`}
-					data-adinject-category={props.contentCategory}
-					style={{ minHeight: "250px", width: "100%", ...props.style }}
-				/>
-			);
+			return <EzoicSlotContainer slot={props.slot} props={props} />;
 		},
 	});
 }

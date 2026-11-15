@@ -94,21 +94,26 @@ export function useAdMetrics(
 						onImpression?.();
 					}
 
-					startTimeRef.current = Date.now();
-					intervalTimer = setInterval(() => {
-						if (startTimeRef.current) {
-							const elapsed = Date.now() - startTimeRef.current;
-							setViewableDurationMs(elapsed);
+					if (!intervalTimer) {
+						startTimeRef.current = Date.now();
+						intervalTimer = setInterval(() => {
+							if (startTimeRef.current) {
+								const elapsed = Date.now() - startTimeRef.current;
+								setViewableDurationMs(elapsed);
 
-							if (elapsed >= viewableTimeMs && !viewableTriggeredRef.current) {
-								viewableTriggeredRef.current = true;
-								setIsViewable(true);
-								onViewable?.();
+								if (elapsed >= viewableTimeMs && !viewableTriggeredRef.current) {
+									viewableTriggeredRef.current = true;
+									setIsViewable(true);
+									onViewable?.();
+								}
 							}
-						}
-					}, 200);
+						}, 200);
+					}
 				} else {
-					if (intervalTimer) clearInterval(intervalTimer);
+					if (intervalTimer) {
+						clearInterval(intervalTimer);
+						intervalTimer = null;
+					}
 					startTimeRef.current = null;
 				}
 			},

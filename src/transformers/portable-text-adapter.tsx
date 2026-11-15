@@ -105,7 +105,7 @@ export function injectPortableTextAds({
 
 				const adBlock: InjectedAdBlock = {
 					_type: "adinject.adSlot",
-					_key: `ad_slot_${rule.id}_${adsInserted}_${Date.now()}`,
+					_key: `adinject_slot_${rule.id}_${adsInserted}_p${paragraphIndex}`,
 					adUnit,
 					slotIndex: adsInserted,
 					ruleId: rule.id,
@@ -166,7 +166,7 @@ export function injectPortableTextAffiliate<T extends Record<string, unknown>>({
 			if (paragraphIndex === afterParagraph && !injected) {
 				const affiliateBlock: InjectedAffiliateBlock = {
 					_type: type,
-					_key: `affiliate_${Date.now()}_${i}`,
+					_key: `adinject_${type.replace(/[^a-zA-Z0-9]/g, "_")}_p${paragraphIndex}_${i}`,
 					data,
 				};
 				result.push(affiliateBlock);
@@ -179,7 +179,7 @@ export function injectPortableTextAffiliate<T extends Record<string, unknown>>({
 	if (!injected && result.length > 0) {
 		result.push({
 			_type: type,
-			_key: `affiliate_${Date.now()}_end`,
+			_key: `adinject_${type.replace(/[^a-zA-Z0-9]/g, "_")}_end`,
 			data,
 		});
 	}

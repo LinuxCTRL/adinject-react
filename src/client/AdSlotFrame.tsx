@@ -12,6 +12,10 @@ export interface AdSlotFrameProps extends React.HTMLAttributes<HTMLElement> {
 	as?: "aside" | "div" | "section";
 	/** Reserved minHeight for zero CLS */
 	minHeight?: number | string;
+	/** Reserved width */
+	width?: number | string;
+	/** Reserved height */
+	height?: number | string;
 	/** Reserved aspectRatio for zero CLS */
 	aspectRatio?: string;
 	/** Extra class names */
@@ -34,6 +38,8 @@ export const AdSlotFrame = forwardRef<HTMLElement, AdSlotFrameProps>(
 			a11yRole = "complementary",
 			as: Component = "aside",
 			minHeight,
+			width,
+			height,
 			aspectRatio,
 			className = "",
 			style,
@@ -44,6 +50,8 @@ export const AdSlotFrame = forwardRef<HTMLElement, AdSlotFrameProps>(
 	) => {
 		const combinedStyle: React.CSSProperties = {
 			minHeight,
+			width,
+			height,
 			aspectRatio,
 			position: "relative",
 			boxSizing: "border-box",

@@ -143,16 +143,46 @@ export function ConsentProvider({
 			window.__gpp("addEventListener", (evt: unknown) => {
 				const gppEvt = evt as {
 					eventName?: string;
-					pingData?: { applicableSections?: number[]; gppVersion?: string };
+					pingData?: {
+						applicableSections?: number[];
+						gppVersion?: string;
+						signalStatus?: "ready" | "not ready";
+					};
 				};
 				if (
 					gppEvt?.eventName === "sectionChange" ||
 					gppEvt?.eventName === "signalStatus"
 				) {
-					const applicableSections = gppEvt?.pingData?.applicableSections || [];
-					const hasConsent =
-						applicableSections.length > 0 && !!gppEvt?.pingData?.gppVersion;
-					setStatus(hasConsent ? "granted" : "denied");
+					const pingData = gppEvt?.pingData;
+					if (pingData?.signalStatus === "not ready") return;
+
+					const applicableSections = pingData?.applicableSections || [];
+					// If no specific privacy sections apply to user, consent is granted
+					if (applicableSections.length === 0) {
+						setStatus("granted");
+						return;
+					}
+
+					// Check section data for opt-outs
+					try {
+						window.__gpp?.(
+							"getSection",
+							(sectionData: unknown, success: boolean) => {
+								if (success && sectionData) {
+									const data = sectionData as Record<string, unknown>;
+									const isOptedOut =
+										data.SaleOptOut === 1 ||
+										data.SharingOptOut === 1 ||
+										data.PersonalDataConsents === 0;
+									setStatus(isOptedOut ? "denied" : "granted");
+								} else {
+									setStatus("granted");
+								}
+							},
+						);
+					} catch {
+						setStatus("granted");
+					}
 				}
 			});
 		}
@@ -163,12 +193,23 @@ export function ConsentProvider({
 				"addEventListener",
 				2,
 				(tcData: unknown, success: boolean) => {
+					if (!success || !tcData) return;
 					const tcf = tcData as {
-						eventStatus?: string;
+						gdprApplies?: boolean;
+						eventStatus?: "tcloaded" | "cmpuishown" | "useractioncomplete";
 						purpose?: { consents?: Record<number, boolean> };
 					};
-					if (success && tcf?.eventStatus === "tcloaded") {
-						const hasConsent = tcf?.purpose?.consents?.[1] === true;
+					if (
+						tcf.eventStatus === "tcloaded" ||
+						tcf.eventStatus === "useractioncomplete"
+					) {
+						// If GDPR does not apply (e.g. non-EEA traffic), consent is granted
+						if (tcf.gdprApplies === false) {
+							setStatus("granted");
+							return;
+						}
+						// Purpose 1: Store and/or access information on a device
+						const hasConsent = tcf.purpose?.consents?.[1] === true;
 						setStatus(hasConsent ? "granted" : "denied");
 					}
 				},

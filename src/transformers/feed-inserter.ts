@@ -123,6 +123,9 @@ export function injectFeedAds<T>({
 	}
 
 	// Default ad unit if not provided
+	const isDev =
+		typeof process === "undefined" || process.env?.NODE_ENV !== "production";
+
 	const fallbackUnit: AdUnit = adUnit ||
 		(rule && adUnits?.[rule.adUnitId]) || {
 			id: "default-feed-unit",
@@ -131,7 +134,7 @@ export function injectFeedAds<T>({
 			slot: "0000000000",
 			format: "fluid",
 			responsive: true,
-			testMode: true,
+			testMode: isDev,
 		};
 
 	// Idempotency guard: If items array was already injected with ads, strip previous ad slots

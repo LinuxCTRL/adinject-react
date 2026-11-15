@@ -5,6 +5,7 @@ import type { AdAdapter } from "../adapters";
 import { loadScriptOnce } from "../adapters";
 import { injectFeedAds, isAdSlot } from "../transformers/feed-inserter";
 import type { AdUnit, PlacementRule } from "../types";
+import { useAdInject } from "./AdInjectProvider";
 import { InFeedAdCard } from "./InFeedAdCard";
 
 export interface AdInjectFeedProps<T> {
@@ -56,11 +57,30 @@ export function AdInjectFeed<T>({
 	startOffset = 1,
 	maxAds = 4,
 	gridSpan = "card",
-	testMode = false,
+	testMode,
 	className = "",
 	renderItem,
 	renderAd,
 }: AdInjectFeedProps<T>) {
+	const adInjectContext = useAdInject();
+	const effectiveTestMode =
+		testMode ?? adUnit?.testMode ?? adInjectContext.testMode ?? false;
+	const effectiveClient =
+		adUnit?.client || adInjectContext.client || "ca-pub-XXXXXXXX";
+	const effectiveFallback =
+		adUnit?.fallback || adInjectContext.defaultFallback;
+
+	const resolvedAdUnit: AdUnit = adUnit || {
+		id: "default-feed-unit",
+		name: "In-Feed Ad Unit",
+		client: effectiveClient,
+		slot: "0000000000",
+		format: "fluid",
+		responsive: true,
+		testMode: effectiveTestMode,
+		fallback: effectiveFallback,
+	};
+
 	React.useEffect(() => {
 		if (adapter?.loadScript) {
 			loadScriptOnce(adapter.name, adapter.loadScript);
@@ -83,9 +103,9 @@ export function AdInjectFeed<T>({
 			startOffset: rule?.startOffset ?? startOffset,
 			maxAdsPerFeed: rule?.maxAdsPerFeed ?? maxAds,
 			gridSpan: rule?.gridSpan ?? gridSpan,
-			adUnitId: rule?.adUnitId || adUnit?.id || "default",
+			adUnitId: rule?.adUnitId || resolvedAdUnit.id,
 		},
-		adUnit,
+		adUnit: resolvedAdUnit,
 	});
 
 	return (

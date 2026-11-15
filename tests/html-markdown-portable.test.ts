@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { injectHtmlAds } from "../src/transformers/html-inserter";
+import { injectHtmlAds, splitHtmlForAds } from "../src/transformers/html-inserter";
 import { injectMarkdownAds } from "../src/transformers/markdown-inserter";
 import {
   injectPortableTextAds,
@@ -76,6 +76,22 @@ describe("Content Transformers", () => {
       expect(result.insertedAds.length).toBe(2);
       expect(result.insertedAds[0]?.insertedAfterParagraph).toBe(2);
       expect(result.insertedAds[1]?.insertedAfterParagraph).toBe(4);
+    });
+
+    it("should split html chunks cleanly with splitHtmlForAds", () => {
+      const html = `
+        <p>Paragraph 1 with rich content for testing splitHtmlForAds.</p>
+        <p>Paragraph 2 with rich content for testing splitHtmlForAds.</p>
+        <p>Paragraph 3 with rich content for testing splitHtmlForAds.</p>
+      `;
+      const chunks = splitHtmlForAds({
+        html,
+        rule: { ...rule, paragraphInterval: 1, startOffset: 1, minParagraphsTotal: 2 },
+        adUnit,
+      });
+      expect(chunks.length).toBeGreaterThan(1);
+      const adChunks = chunks.filter((c) => c.type === "ad");
+      expect(adChunks.length).toBeGreaterThan(0);
     });
   });
 

@@ -83,12 +83,15 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^26.3.0",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tsup": "^8.3.6",
     "typescript": "^5.7.3"
+  },
+  "allowScripts": {
+    "esbuild": true
   }
 }
