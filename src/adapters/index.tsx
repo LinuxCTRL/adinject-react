@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import type React from "react";
+import { useEffect } from "react";
 import { AdSenseSlot } from "../client/AdSenseSlot";
 import type { AdDimensions, AdFormat, FallbackBanner } from "../types";
 
@@ -252,11 +253,7 @@ export function gamAdapter(opts: {
 			}
 
 			return (
-				<GamSlotContainer
-					divId={divId}
-					adUnitPath={adUnitPath}
-					props={props}
-				/>
+				<GamSlotContainer divId={divId} adUnitPath={adUnitPath} props={props} />
 			);
 		},
 	});

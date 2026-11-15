@@ -67,8 +67,7 @@ export function AdInjectFeed<T>({
 		testMode ?? adUnit?.testMode ?? adInjectContext.testMode ?? false;
 	const effectiveClient =
 		adUnit?.client || adInjectContext.client || "ca-pub-XXXXXXXX";
-	const effectiveFallback =
-		adUnit?.fallback || adInjectContext.defaultFallback;
+	const effectiveFallback = adUnit?.fallback || adInjectContext.defaultFallback;
 
 	const resolvedAdUnit: AdUnit = adUnit || {
 		id: "default-feed-unit",

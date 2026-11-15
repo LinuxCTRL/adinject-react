@@ -101,7 +101,10 @@ export function useAdMetrics(
 								const elapsed = Date.now() - startTimeRef.current;
 								setViewableDurationMs(elapsed);
 
-								if (elapsed >= viewableTimeMs && !viewableTriggeredRef.current) {
+								if (
+									elapsed >= viewableTimeMs &&
+									!viewableTriggeredRef.current
+								) {
 									viewableTriggeredRef.current = true;
 									setIsViewable(true);
 									onViewable?.();

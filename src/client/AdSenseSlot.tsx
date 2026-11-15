@@ -113,9 +113,7 @@ export function AdSenseSlot({
 						slot,
 						adUnitId: `unit-${slot}`,
 						pathname:
-							typeof window !== "undefined"
-								? window.location.pathname
-								: "/",
+							typeof window !== "undefined" ? window.location.pathname : "/",
 						device:
 							typeof window !== "undefined" && window.innerWidth < 768
 								? "mobile"
