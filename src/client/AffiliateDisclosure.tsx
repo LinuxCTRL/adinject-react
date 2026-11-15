@@ -106,8 +106,13 @@ export function AffiliateDisclosure({
 		<div
 			role="note"
 			aria-label="Affiliate Disclaimer"
-			className={`adinject-disclosure-banner rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-950 dark:text-amber-200/90 shadow-2xs my-4 ${className}`}
-			style={style}
+			className={`adinject-disclosure-banner rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-950 dark:text-amber-200/90 shadow-sm my-4 ${className}`}
+			style={{
+				borderRadius: "12px",
+				border: "1px solid rgba(245, 158, 11, 0.25)",
+				backgroundColor: "rgba(245, 158, 11, 0.05)",
+				...style,
+			}}
 		>
 			<div className="flex items-start gap-2.5">
 				<span className="text-amber-500 text-sm shrink-0">ⓘ</span>

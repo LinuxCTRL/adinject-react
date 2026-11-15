@@ -149,6 +149,36 @@ describe("Idempotency & Density Guards", () => {
     expect(run1).toBe(run2); // exact cached reference
   });
 
+  it("should invalidate feed cache when items length changes or rule enables", () => {
+    const initialItems = ["Item 1", "Item 2", "Item 3"];
+    const runDisabled = injectFeedAds({
+      items: initialItems,
+      rule: { ...sampleRule, enabled: false },
+      adUnit: sampleAdUnit,
+      idempotencyKey: "dynamic-feed-test",
+    });
+    expect(runDisabled.filter((i) => i.type === "ad").length).toBe(0);
+
+    // Rule enabled with same key should NOT return poisoned disabled cache
+    const runEnabled = injectFeedAds({
+      items: initialItems,
+      rule: { ...sampleRule, enabled: true },
+      adUnit: sampleAdUnit,
+      idempotencyKey: "dynamic-feed-test",
+    });
+    expect(runEnabled.filter((i) => i.type === "ad").length).toBeGreaterThan(0);
+
+    // More items appended should invalidate stale cache
+    const expandedItems = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"];
+    const runExpanded = injectFeedAds({
+      items: expandedItems,
+      rule: sampleRule,
+      adUnit: sampleAdUnit,
+      idempotencyKey: "dynamic-feed-test",
+    });
+    expect(runExpanded.length).toBeGreaterThan(runEnabled.length);
+  });
+
   it("should stamp data-adinject-affiliate attribute on autolinked anchors", () => {
     const html = "<p>Get your air fryer ready for dinner.</p>";
     const result = injectHtmlAffiliateKeywords(html, {

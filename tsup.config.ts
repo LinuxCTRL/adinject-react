@@ -11,13 +11,10 @@ export default defineConfig({
   format: ["cjs", "esm"],
   dts: true,
   clean: true,
-  splitting: false,
+  splitting: true,
   treeshake: true,
   sourcemap: true,
   minify: false,
-  banner: {
-    js: '"use client";',
-  },
   external: ["react", "react-dom", "next", "next/script", "next/navigation"],
 });
 

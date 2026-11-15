@@ -26,7 +26,12 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "exports": {
+    "./package.json": "./package.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
@@ -65,7 +70,7 @@
     "url": "https://github.com/LinuxCTRL/adinject-react/issues"
   },
   "scripts": {
-    "build": "tsup && node -e 'const fs = require(\"fs\"); [\"dist/index.js\", \"dist/index.mjs\", \"dist/client/index.js\", \"dist/client/index.mjs\"].forEach(f => { if (fs.existsSync(f)) { const c = fs.readFileSync(f, \"utf8\"); if (!c.startsWith(\"\\\"use client\\\"\")) fs.writeFileSync(f, \"\\\"use client\\\";\\n\" + c); } });'",
+    "build": "tsup && node -e 'const fs = require(\"fs\"); [\"dist/client/index.js\", \"dist/client/index.mjs\"].forEach(f => { if (fs.existsSync(f)) { const c = fs.readFileSync(f, \"utf8\"); if (!c.startsWith(\"\\\"use client\\\"\")) fs.writeFileSync(f, \"\\\"use client\\\";\\n\" + c); } });'",
     "dev": "tsup --watch",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
@@ -83,12 +88,16 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^26.3.0",
+    "@biomejs/biome": "^2.6.6",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tsup": "^8.3.6",
     "typescript": "^5.7.3"
+  },
+  "allowScripts": {
+    "esbuild": true
   }
 }

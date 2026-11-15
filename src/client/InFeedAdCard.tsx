@@ -113,7 +113,7 @@ export function InFeedAdCard({
 						client: adUnit.client,
 						format: isFullWidth ? "horizontal" : adUnit.format || "rectangle",
 						responsive: adUnit.responsive ?? true,
-						testMode: testMode || adUnit.testMode,
+						testMode: testMode ?? adUnit.testMode,
 						fallback: adUnit.fallback,
 						className: "w-full",
 					})
@@ -123,7 +123,7 @@ export function InFeedAdCard({
 						slot={adUnit.slot}
 						format={isFullWidth ? "horizontal" : adUnit.format || "rectangle"}
 						responsive={adUnit.responsive ?? true}
-						testMode={testMode || adUnit.testMode}
+						testMode={testMode ?? adUnit.testMode}
 						debug={debug}
 						fallback={adUnit.fallback}
 						className="w-full"

@@ -3,6 +3,7 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
+	AdAnalyticsEvent,
 	AdConsentFallback,
 	AdDimensions,
 	AdFormat,
@@ -42,6 +43,8 @@ export interface AdSenseSlotProps {
 	className?: string;
 	style?: React.CSSProperties;
 	onStatusChange?: (status: AdStatus) => void;
+	/** Optional analytics event callback */
+	onAnalyticsEvent?: (event: AdAnalyticsEvent) => void;
 }
 
 const DEFAULT_DIMENSIONS: Record<AdFormat, AdDimensions> = {
@@ -75,6 +78,7 @@ export function AdSenseSlot({
 	className = "",
 	style,
 	onStatusChange,
+	onAnalyticsEvent,
 }: AdSenseSlotProps) {
 	const adInjectContext = useAdInject();
 	const effectiveClient = client || adInjectContext.client || "ca-pub-XXXXXXXX";
@@ -96,12 +100,60 @@ export function AdSenseSlot({
 		(newStatus: AdStatus) => {
 			setStatus(newStatus);
 			onStatusChange?.(newStatus);
+			if (onAnalyticsEvent) {
+				const eventMap: Partial<Record<AdStatus, AdAnalyticsEvent["type"]>> = {
+					rendered: "impression",
+					unfilled: "fallback_rendered",
+					error: "error",
+				};
+				const eventType = eventMap[newStatus];
+				if (eventType) {
+					onAnalyticsEvent({
+						type: eventType,
+						slot,
+						adUnitId: `unit-${slot}`,
+						pathname:
+							typeof window !== "undefined" ? window.location.pathname : "/",
+						device:
+							typeof window !== "undefined" && window.innerWidth < 768
+								? "mobile"
+								: "desktop",
+						timestamp: Date.now(),
+						metadata: { format, client: effectiveClient },
+					});
+				}
+			}
 		},
-		[onStatusChange],
+		[onStatusChange, onAnalyticsEvent, slot, format, effectiveClient],
 	);
 
 	const { status: consentStatus } = useConsent();
 	const isConsentGranted = consentStatus === "granted";
+
+	// Dev-mode configuration sanity check
+	useEffect(() => {
+		if (process.env.NODE_ENV !== "production") {
+			if (!client && !adInjectContext.client) {
+				console.warn(
+					`[AdInject Warning] AdSenseSlot #${slot} has no client ID configured. Pass client="ca-pub-..." or wrap with <AdInjectProvider client="ca-pub-...".`,
+				);
+			}
+			if (slot === "0000000000") {
+				console.warn(
+					"[AdInject Warning] AdSenseSlot is using placeholder slot ID '0000000000'. Set a valid slot ID from your Google AdSense account.",
+				);
+			}
+		}
+	}, [client, adInjectContext.client, slot]);
+
+	// Debug mode logger
+	useEffect(() => {
+		if (debug) {
+			console.log(
+				`[AdInject Debug] Slot #${slot}: status=${status}, client=${effectiveClient}, testMode=${effectiveTestMode}, consent=${consentStatus}`,
+			);
+		}
+	}, [debug, slot, status, effectiveClient, effectiveTestMode, consentStatus]);
 
 	// 1. IntersectionObserver for zero-jank lazy loading
 	useEffect(() => {
@@ -156,9 +208,26 @@ export function AdSenseSlot({
 		return () => clearTimeout(pushTimer);
 	}, [isVisible, effectiveTestMode, updateStatus, isConsentGranted]);
 
-	// 3. Fallback unfill detection check
+	// 3. Fallback unfill detection check (MutationObserver + safety timeout)
 	useEffect(() => {
-		if (effectiveTestMode || !isPushedRef.current) return;
+		if (effectiveTestMode || status !== "rendered") return;
+
+		const insEl = containerRef.current?.querySelector(".adsbygoogle");
+		let observer: MutationObserver | null = null;
+
+		if (insEl && typeof MutationObserver !== "undefined") {
+			observer = new MutationObserver(() => {
+				const adStatus = insEl.getAttribute("data-ad-status");
+				if (adStatus === "unfilled") {
+					updateStatus("unfilled");
+					observer?.disconnect();
+				}
+			});
+			observer.observe(insEl, {
+				attributes: true,
+				attributeFilter: ["data-ad-status"],
+			});
+		}
 
 		const checkTimer = setTimeout(() => {
 			const el = containerRef.current?.querySelector(".adsbygoogle");
@@ -170,15 +239,18 @@ export function AdSenseSlot({
 			}
 		}, 2500);
 
-		return () => clearTimeout(checkTimer);
-	}, [effectiveTestMode, updateStatus]);
+		return () => {
+			if (observer) observer.disconnect();
+			clearTimeout(checkTimer);
+		};
+	}, [status, effectiveTestMode, updateStatus]);
 
 	// 4. Dev-Mode CLS Regression Guard
 	useEffect(() => {
 		if (
 			process.env.NODE_ENV === "production" ||
 			effectiveTestMode ||
-			!isPushedRef.current
+			status !== "rendered"
 		)
 			return;
 
@@ -199,7 +271,7 @@ export function AdSenseSlot({
 		}, 3500);
 
 		return () => clearTimeout(clsCheckTimer);
-	}, [effectiveTestMode, slot, effectiveDimensions.minHeight]);
+	}, [status, effectiveTestMode, slot, effectiveDimensions.minHeight]);
 
 	const containerStyle: React.CSSProperties = {
 		width: "100%",
@@ -216,6 +288,8 @@ export function AdSenseSlot({
 			ref={containerRef}
 			a11yLabel={a11yLabel}
 			minHeight={effectiveDimensions.minHeight}
+			width={effectiveDimensions.width}
+			height={effectiveDimensions.height}
 			aspectRatio={effectiveDimensions.aspectRatio}
 			className={`adinject-slot-container ${className}`}
 			style={containerStyle}

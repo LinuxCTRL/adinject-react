@@ -22,6 +22,8 @@ export interface InArticleAdsProps {
 	interval?: number;
 	/** Minimum paragraphs before the first ad (default: 1) */
 	startOffset?: number;
+	/** Minimum total paragraphs required in the article before any ad is injected (default: 0) */
+	minParagraphsTotal?: number;
 	/** Maximum total ads injected in the article (default: 4) */
 	maxAds?: number;
 	/** AdSense slot ID (inherits client from AdInjectProvider) */
@@ -52,6 +54,7 @@ export function InArticleAds({
 	markdown,
 	interval = 3,
 	startOffset = 1,
+	minParagraphsTotal = 0,
 	maxAds = 4,
 	slot,
 	adUnit,
@@ -95,8 +98,9 @@ export function InArticleAds({
 			enabled: true,
 			deviceFilter: "all" as const,
 			paragraphInterval: interval,
-			minWordsBeforeFirstAd: startOffset * 10,
-			minParagraphsTotal: startOffset + 1,
+			startOffset,
+			minWordsBeforeFirstAd: 0,
+			minParagraphsTotal,
 			maxAdsPerArticle: maxAds,
 			adUnitId: targetAdUnit.id,
 		};
@@ -127,6 +131,7 @@ export function InArticleAds({
 		markdown,
 		interval,
 		startOffset,
+		minParagraphsTotal,
 		maxAds,
 		adUnit,
 		effectiveSlot,

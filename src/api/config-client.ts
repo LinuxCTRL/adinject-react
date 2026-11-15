@@ -43,7 +43,8 @@ const swrCache = new Map<
  */
 export async function fetchAdInjectConfig({
 	projectId,
-	baseUrl = typeof process !== "undefined" && process.env?.NEXT_PUBLIC_ADINJECT_API_URL
+	baseUrl = typeof process !== "undefined" &&
+	process.env?.NEXT_PUBLIC_ADINJECT_API_URL
 		? process.env.NEXT_PUBLIC_ADINJECT_API_URL
 		: "https://adinject.io",
 	revalidate = 300,

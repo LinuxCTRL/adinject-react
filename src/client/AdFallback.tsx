@@ -30,11 +30,23 @@ export function AdFallback({ fallback, className = "" }: AdFallbackProps) {
 					? `Advertisement: ${fallback.title}`
 					: "Sponsored Advertisement"
 			}
-			className={`group relative flex flex-col md:flex-row items-center gap-4 rounded-xl border border-primary/20 bg-linear-to-r from-primary/5 via-card to-background p-4 text-card-foreground shadow-xs transition-all hover:border-primary/40 hover:shadow-md ${className}`}
-			style={{ textDecoration: "none" }}
+			className={`adinject-fallback-card group relative flex flex-col md:flex-row items-center gap-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-card to-background p-4 text-card-foreground shadow-sm transition-all hover:border-primary/40 hover:shadow-md ${className}`}
+			style={{
+				textDecoration: "none",
+				borderRadius: "12px",
+				border: "1px solid rgba(var(--primary-rgb, 59, 130, 246), 0.2)",
+				backgroundColor: "rgba(var(--card-rgb, 255, 255, 255), 0.95)",
+				color: "inherit",
+			}}
 		>
 			{fallback.imageUrl && (
-				<div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg bg-muted">
+				<div
+					className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg bg-muted"
+					style={{
+						backgroundColor: "rgba(0, 0, 0, 0.05)",
+						borderRadius: "8px",
+					}}
+				>
 					{/* eslint-disable-next-line @next/next/no-img-element */}
 					<img
 						src={fallback.imageUrl}

@@ -1,3 +1,4 @@
+import { isParagraphAdPosition } from "../rules/rule-evaluator";
 import type {
 	AdInjectionResult,
 	AdUnit,
@@ -39,12 +40,32 @@ export function injectMarkdownAds({
 		};
 	}
 
+	const rawBlocks = markdown.split(/\n\s*\n/);
+	const totalParagraphCount = rawBlocks.filter(
+		(block) =>
+			block &&
+			block.trim().length > 0 &&
+			!block.startsWith("#") &&
+			!block.startsWith("```") &&
+			!block.startsWith(">") &&
+			!block.startsWith("- ") &&
+			!block.startsWith("1. "),
+	).length;
+
+	if (totalParagraphCount < Math.max(0, rule.minParagraphsTotal ?? 0)) {
+		return {
+			content: markdown,
+			insertedAds: [],
+			totalWords: countWordsInMarkdown(markdown),
+			totalParagraphs: totalParagraphCount,
+		};
+	}
+
 	const defaultMarker = (slot: InjectedAdSlot) =>
 		`\n\n<AdInjectSlot slot="${slot.adUnit.slot}" client="${slot.adUnit.client}" format="${slot.adUnit.format || "fluid"}" />\n\n`;
 
 	const renderMarker = customAdMarker || defaultMarker;
 
-	const rawBlocks = markdown.split(/\n\s*\n/);
 	const transformedBlocks: string[] = [];
 	const insertedAds: InjectedAdSlot[] = [];
 
@@ -71,8 +92,12 @@ export function injectMarkdownAds({
 
 			const shouldInject =
 				adsInserted < rule.maxAdsPerArticle &&
-				wordCountAccumulator >= rule.minWordsBeforeFirstAd &&
-				paragraphIndex % rule.paragraphInterval === 0 &&
+				wordCountAccumulator >= (rule.minWordsBeforeFirstAd ?? 0) &&
+				isParagraphAdPosition(
+					paragraphIndex,
+					rule.startOffset ?? 1,
+					rule.paragraphInterval,
+				) &&
 				i < rawBlocks.length - 1;
 
 			if (shouldInject) {

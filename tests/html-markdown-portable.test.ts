@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { injectHtmlAds } from "../src/transformers/html-inserter";
+import { injectHtmlAds, splitHtmlForAds } from "../src/transformers/html-inserter";
 import { injectMarkdownAds } from "../src/transformers/markdown-inserter";
 import {
   injectPortableTextAds,
@@ -47,6 +47,52 @@ describe("Content Transformers", () => {
       const result = injectHtmlAds({ html: shortHtml, rule, adUnit });
       expect(result.insertedAds.length).toBe(0);
     });
+
+    it("should respect minParagraphsTotal threshold", () => {
+      const html = `
+        <p>Paragraph 1 with plenty of words to easily exceed word limits.</p>
+        <p>Paragraph 2 with plenty of words to easily exceed word limits.</p>
+      `;
+      const result = injectHtmlAds({
+        html,
+        rule: { ...rule, minParagraphsTotal: 4 },
+        adUnit,
+      });
+      expect(result.insertedAds.length).toBe(0);
+    });
+
+    it("should place first ad after startOffset paragraph", () => {
+      const html = `
+        <p>Paragraph 1 with plenty of words to easily exceed word limits.</p>
+        <p>Paragraph 2 with plenty of words to easily exceed word limits.</p>
+        <p>Paragraph 3 with plenty of words to easily exceed word limits.</p>
+        <p>Paragraph 4 with plenty of words to easily exceed word limits.</p>
+      `;
+      const result = injectHtmlAds({
+        html,
+        rule: { ...rule, startOffset: 2, paragraphInterval: 2, minParagraphsTotal: 2 },
+        adUnit,
+      });
+      expect(result.insertedAds.length).toBe(2);
+      expect(result.insertedAds[0]?.insertedAfterParagraph).toBe(2);
+      expect(result.insertedAds[1]?.insertedAfterParagraph).toBe(4);
+    });
+
+    it("should split html chunks cleanly with splitHtmlForAds", () => {
+      const html = `
+        <p>Paragraph 1 with rich content for testing splitHtmlForAds.</p>
+        <p>Paragraph 2 with rich content for testing splitHtmlForAds.</p>
+        <p>Paragraph 3 with rich content for testing splitHtmlForAds.</p>
+      `;
+      const chunks = splitHtmlForAds({
+        html,
+        rule: { ...rule, paragraphInterval: 1, startOffset: 1, minParagraphsTotal: 2 },
+        adUnit,
+      });
+      expect(chunks.length).toBeGreaterThan(1);
+      const adChunks = chunks.filter((c) => c.type === "ad");
+      expect(adChunks.length).toBeGreaterThan(0);
+    });
   });
 
   describe("injectMarkdownAds", () => {
@@ -63,6 +109,37 @@ Paragraph 4 summarizes the recipe and nutritional info.
 
       const result = injectMarkdownAds({ markdown, rule, adUnit });
       expect(result.insertedAds.length).toBeGreaterThan(0);
+    });
+
+    it("should respect minParagraphsTotal and startOffset in Markdown", () => {
+      const markdown = `
+Paragraph 1 with plenty of words to easily exceed word limits.
+
+Paragraph 2 with plenty of words to easily exceed word limits.
+      `;
+      const resultTooShort = injectMarkdownAds({
+        markdown,
+        rule: { ...rule, minParagraphsTotal: 4 },
+        adUnit,
+      });
+      expect(resultTooShort.insertedAds.length).toBe(0);
+
+      const markdownFour = `
+Paragraph 1 with plenty of words.
+
+Paragraph 2 with plenty of words.
+
+Paragraph 3 with plenty of words.
+
+Paragraph 4 with plenty of words.
+      `;
+      const resultOffset = injectMarkdownAds({
+        markdown: markdownFour,
+        rule: { ...rule, startOffset: 2, paragraphInterval: 2, minParagraphsTotal: 2 },
+        adUnit,
+      });
+      expect(resultOffset.insertedAds.length).toBe(1); // after para 2 (para 4 is the last block, skipped by i < rawBlocks.length - 1)
+      expect(resultOffset.insertedAds[0]?.insertedAfterParagraph).toBe(2);
     });
   });
 

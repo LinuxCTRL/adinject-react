@@ -216,10 +216,14 @@ export function AffiliateCard({
 	// 4. Default "card" Variant (grid / catalog native)
 	return (
 		<div
-			className={`adinject-affiliate-card group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 text-card-foreground shadow-xs transition-all hover:border-primary/40 hover:shadow-md ${className}`}
+			className={`adinject-affiliate-card group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 text-card-foreground shadow-sm transition-all hover:border-primary/40 hover:shadow-md ${className}`}
 			style={{
 				boxSizing: "border-box",
 				minHeight: "340px",
+				border: "1px solid rgba(0, 0, 0, 0.08)",
+				backgroundColor: "var(--card, #ffffff)",
+				color: "var(--card-foreground, inherit)",
+				borderRadius: "16px",
 				...product.customStyle,
 				...style,
 			}}

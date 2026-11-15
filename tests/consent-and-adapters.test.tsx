@@ -45,6 +45,16 @@ describe("Consent Provider & Ad Adapters", () => {
     expect(html).toContain("Google AdSense Test Slot");
   });
 
+  it("should render live ad ins tag by default in quickstart without explicit initialStatus", () => {
+    const html = renderToString(
+      <ConsentProvider mode="google-consent-v2">
+        <AdSenseSlot client="ca-pub-1234567890" slot="1122334455" testMode={false} />
+      </ConsentProvider>,
+    );
+    expect(html).toContain('class="adsbygoogle"');
+    expect(html).not.toContain("Consent Required for Personalized Ads");
+  });
+
   it("should render affiliate fallback when consent is denied", () => {
     const html = renderToString(
       <ConsentProvider initialStatus="denied">

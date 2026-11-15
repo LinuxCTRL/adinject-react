@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test & Build (Bun)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Biome Linter & Formatter Check
+        run: bun run check
+
+      - name: TypeScript Typecheck
+        run: bun run typecheck
+
+      - name: Run Tests
+        run: bun test
+
+      - name: Build Package
+        run: bun run build

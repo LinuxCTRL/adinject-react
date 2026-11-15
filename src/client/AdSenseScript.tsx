@@ -17,27 +17,59 @@ export interface AdSenseScriptProps {
 export function AdSenseScript({
 	client,
 	crossOrigin = "anonymous",
+	strategy = "afterInteractive",
 	nonce,
 }: AdSenseScriptProps) {
 	useEffect(() => {
-		if (!client) return;
+		if (!client || typeof document === "undefined") return;
 
 		const scriptId = `adinject-adsense-script-${client}`;
 		if (document.getElementById(scriptId)) {
 			return; // Deduplicate
 		}
 
-		const script = document.createElement("script");
-		script.id = scriptId;
-		script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(
-			client,
-		)}`;
-		script.async = true;
-		script.crossOrigin = crossOrigin;
-		if (nonce) script.nonce = nonce;
+		// Ensure dataLayer exists before AdSense script executes
+		if (typeof window !== "undefined") {
+			window.dataLayer = window.dataLayer || [];
+		}
 
-		document.head.appendChild(script);
-	}, [client, crossOrigin, nonce]);
+		const inject = () => {
+			if (document.getElementById(scriptId)) return;
+			const script = document.createElement("script");
+			script.id = scriptId;
+			script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(
+				client,
+			)}`;
+			script.async = true;
+			script.crossOrigin = crossOrigin;
+			if (nonce) script.nonce = nonce;
+
+			document.head.appendChild(script);
+		};
+
+		if (strategy === "lazyOnload") {
+			if (document.readyState === "complete") {
+				if ("requestIdleCallback" in window) {
+					const handle = window.requestIdleCallback(inject);
+					return () => window.cancelIdleCallback(handle);
+				}
+				const timer = setTimeout(inject, 200);
+				return () => clearTimeout(timer);
+			}
+
+			const onWindowLoad = () => {
+				if ("requestIdleCallback" in window) {
+					window.requestIdleCallback(inject);
+				} else {
+					setTimeout(inject, 200);
+				}
+			};
+			window.addEventListener("load", onWindowLoad, { once: true });
+			return () => window.removeEventListener("load", onWindowLoad);
+		}
+
+		inject();
+	}, [client, crossOrigin, strategy, nonce]);
 
 	return null;
 }

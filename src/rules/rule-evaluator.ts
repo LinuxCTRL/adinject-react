@@ -27,6 +27,25 @@ export function matchesPathPattern(
 }
 
 /**
+ * Returns true when a paragraph (1-based) should receive an ad slot.
+ *
+ * `startOffset` is the paragraph number after which the first ad is placed
+ * (default: 1), and `interval` is the number of paragraphs between ads.
+ *
+ * Example: startOffset=1, interval=3 -> ads after paragraphs 1, 4, 7, ...
+ */
+export function isParagraphAdPosition(
+	paragraphNumber: number,
+	startOffset = 1,
+	interval = 1,
+): boolean {
+	const offset = Math.max(1, Math.floor(startOffset || 1));
+	const step = Math.max(1, Math.floor(interval || 1));
+	if (paragraphNumber < offset) return false;
+	return (paragraphNumber - offset) % step === 0;
+}
+
+/**
  * Evaluates device filters
  */
 export function matchesDevice(
